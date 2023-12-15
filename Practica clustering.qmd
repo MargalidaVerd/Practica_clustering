@@ -1,0 +1,303 @@
+---
+title: "Práctica clustering"
+author: "Carla Martínez, Patricia Mateu y Margalida Verd"
+format: html
+editor: visual
+---
+
+**Cosas que hay que hacer:**
+
+* Resumen de los datos para contextualizar
+* ACP
+* Clustering (entiendo yo que habrá que hacerlo de un par de formas)
+
+## Carga de datos de la exposición
+
+```{r, warning=FALSE,message=FALSE,echo=FALSE}
+library(tidyverse)
+
+# Cargamos el primer dataframe
+global_population = read_csv("Global Population Trends(2016-2022).csv", show_col_types = FALSE) 
+
+# Del segundo dataframe seleccionamos las variables que nos interesan para el estudio
+
+data = read_csv("world_population.csv",show_col_types = FALSE)
+world_data <- data %>% 
+  select(3,5,14) %>% rename(Country= "Country/Territory", Area_km2 = "Area (km²)")   
+
+# Unimos los dos dataframes y creamos el tibble que usaremos para el estudio
+world_population = left_join(global_population,world_data, by = "Country")
+
+world_population %>% 
+  glimpse()
+
+```
+
+```{r, warning=FALSE, message=FALSE,echo=FALSE}
+world_population <- world_population %>% 
+  rename(Pais = "Country", 
+         Año = "Year", 
+         Pob_total = "Total Population", 
+         Pob_urbana = "Urban Population", 
+         Pob_rural = "Rural Population", 
+         Densidad = "Population Density", 
+         Esp_vida = "Life Expectancy", 
+         Natalidad = "Birth Rate", 
+         Mortalidad = "Death Rate", 
+         Fertilidad = "Fertility Rate", 
+         Mortalidad_infantil = "Infant Mortality Rate", 
+         Crecimiento = "Growth Rate", 
+         Continente = "Continent") %>% 
+  relocate(Continente, .after = Pais) %>% 
+  relocate(Area_km2, .after = Continente) %>% 
+  relocate(Mortalidad_infantil, .after = Mortalidad) 
+
+```
+
+```{r, warning=FALSE, message=FALSE,echo=FALSE}
+world_population <- world_population %>% 
+  mutate(Año = as.character(Año)) %>% 
+  mutate(Pob_total = as.numeric(gsub("," , "", Pob_total, fixed = TRUE))) %>%
+  mutate(Pob_rural = as.numeric(gsub("," , "", Pob_rural, fixed = TRUE))) %>%
+  mutate(Pob_urbana = as.numeric(gsub("," , "", Pob_urbana, fixed = TRUE))) %>% 
+  mutate(Densidad = as.integer(Densidad)) %>% 
+  mutate(Esp_vida = as.integer(Esp_vida)) %>% 
+  mutate(Fertilidad = as.numeric(Fertilidad)) %>% 
+  mutate(Mortalidad_infantil = as.numeric(Mortalidad_infantil)) %>% 
+  mutate(Crecimiento = as.character(Crecimiento))
+  
+```
+
+```{r, warning=FALSE, message=FALSE,echo=FALSE}
+world_population %>% 
+  group_by(Año) %>% 
+  summarise_all(funs(sum(is.na(.))))
+```
+
+```{r,warning=FALSE,message=FALSE,echo=FALSE}
+world_population <- world_population %>% 
+  filter(Año == 2018 |Año == 2019 |Año == 2020) 
+```
+
+```{r, warning=FALSE,message=FALSE,echo=FALSE}
+world_population$Continente[19:21] = "North America"
+world_population$Area_km2[19:21] = 442
+
+world_population$Continente[73:75] = "Europe"
+world_population$Area_km2[73:75] = 51197
+
+world_population$Continente[97:99] = "Africa"
+world_population$Area_km2[97:99] = 4033
+
+world_population$Continente[151:153] = "Africa"
+world_population$Area_km2[151:153] = 2344858
+
+world_population$Continente[118:120] = "Europe"
+world_population$Area_km2[118:120] = 198
+
+world_population$Continente[277:279] = "Europe"
+world_population$Area_km2[277:279] = 572
+
+world_population$Continente[304:306] = "Europe"
+world_population$Area_km2[304:306] = 10887
+
+world_population$Continente[310:312] = "Asia"
+world_population$Area_km2[310:312] = 199951
+
+world_population$Continente[313:315] = "Asia"
+world_population$Area_km2[313:315] = 236800
+
+world_population$Continente[340:342] = "Asia"
+world_population$Area_km2[340:342] = 28
+
+world_population$Continente[472:474] = "Africa"
+world_population$Area_km2[472:474] = 342000
+
+world_population$Continente[490:492] = "Africa"
+world_population$Area_km2[490:492] = 964
+
+world_population$Continente[511:513] = "Europe"
+world_population$Area_km2[511:513] = 34
+
+world_population$Continente[514:516] = "Europe"
+world_population$Area_km2[514:516] = 49035
+
+world_population$Continente[541:543] = "North America"
+world_population$Area_km2[541:543] = 269
+
+world_population$Continente[544:546] = "South America"
+world_population$Area_km2[544:546] = 616
+
+world_population$Continente[547:549] = "Europe"
+world_population$Area_km2[547:549] = 53
+
+world_population$Continente[550:552] = "North America"
+world_population$Area_km2[550:552] = 389
+
+world_population$Continente[565:567] = "Asia"
+world_population$Area_km2[565:567] = 185180
+
+world_population$Continente[586:588] = "South America"
+world_population$Area_km2[586:588] = 5128
+
+world_population$Continente[598:600] = "North America"
+world_population$Area_km2[598:600] = 948
+
+world_population$Continente[604:606] = "Asia"
+world_population$Area_km2[604:606] = 83600
+
+world_population$Continente[634:636] = "North America"
+world_population$Area_km2[634:636] = 346
+
+world_population$Continente[637:639] = "Asia"
+world_population$Area_km2[637:639] = 5860
+
+View(world_population)
+```
+
+## Análisis de componentes principales
+
+Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable `Año`, no había grandes diferencias entre los tres años resultantes: por ello, vamos a considerar solo el año `2019` para llevar a cabo nuestro ACP. 
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+
+datos_numericos <- world_population %>% 
+  filter(Año == 2019) %>% 
+  select(3,5:12) %>% 
+  drop_na() %>% 
+  glimpse()
+
+```
+
+**Comentario Marga: tenemos que determinar si hacemos princomp o prcomp, si escalamos los datos o no y si utilizamos la matriz de covarianzas o correlaciones**
+
+
+Empezamos ahora con el ACP. Vamos a utilizar la matriz de **correlaciones o covarianzas** y vamos a escalar los datos, debido a que no están tomados con las mismas magnitudes. El resultado que obtenemos es el siguiente:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library("factoextra")
+data.acp=prcomp(datos_numericos, cor = TRUE, scale = TRUE)
+data.acp
+```
+
+Para entenderlo mejor, obtenemos los valores propios de cada componente:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+get_eigenvalue(data.acp)
+```
+Observemos que para explicar el 80% de los datos tendríamos que escoger tres componentes principales. Con el siguiente gráfico vamos a determinar si es necesario escoger una más.
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+fviz_eig(data.acp, addlabels = TRUE, ylim=c(0,100))
+```
+Como la pendiente entre la tercera y la cuarta componente no es pronunciada, nos quedaremos con las tres primeras componentes principales. 
+
+**No se si el grafico siguiente nos va a dar alguna info, porque tenemos 3 componenentes y solo nos representa 2**
+
+En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+fviz_pca_var(data.acp, col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) 
+```
+
+Vamos a explicarlo detalladamente:
+
+-   El color de cada variable indica cuan bien representadas están; 
+
+-   La longitud de las flechas nos indica que no todas las varibales tienen influencia en las componentes princpales.
+
+
+**¿Quitariais los outliers y comprovariais si hay cambios? Todo lo quye hay escrito abajo esta copiado de la práctica de pca, hay que cambiarlo todo**
+
+Vamos a realizar el mismo estudio, pero sin considerar los países que son outliers. Para ello, primero vamos a visualizar quiénes son estos países. Utilizamos la función `boxplot()`:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#boxplot(datos_numericos)
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#outliers = c(which.max(data$Agr), which.min(data$Fab), which.max(data$Con), which.min(data$Con), which.max(data$TC), which.min(data$TC))
+#data_sin_outliers = data[-c(13,15,18),]
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#outliers_dos = c(which.max(data_sin_outliers$Agr), which.min(data_sin_outliers$Con))
+#data_sin_outliers = data_sin_outliers[-23,]
+```
+
+Estos son:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#data[13,]
+#data[15,]
+#data[18,]
+#data[which.max(data_sin_outliers$Agr),]
+```
+
+Una vez hemos eliminado los outliers, repetimos el proceso anterior de realizar el ACP:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#data.acp.outliers=princomp(data_sin_outliers, cor = FALSE)
+#data.acp.outliers
+```
+
+Veamos los valores propios de cada una de las componentes:
+
+```{r}
+#get_eigenvalue(data.acp.outliers)
+```
+
+Observando la última columna, vemos que con la primera componente explicamos el 72.43% de la información, y al considerar las dos primeras componentes, llegamos a un 91.32% de explicación de los datos. De nuevo, veámoslo en el siguiente gráfico de codo:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#fviz_eig(data.acp.outliers, addlabels = TRUE, ylim=c(0,100))
+```
+
+De nuevo, las pendientes de las rectas indican que con dos componentes principales és suficiente para dar una buena representación de los datos. Veámos con el siguiente gráfico cómo quedan representadas las variables en el círculo de correlación variable:
+
+  
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#fviz_pca_var(data.acp.outliers, col.var = "contrib",
+             #gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             #repel = TRUE) 
+```
+
+Lo primero que nos llama la atención és que la variable agricultura queda aislada del resto, esto nos indica que no presenta correlación con el resto de variables; además, los colores de las flechas nos indican cuán bien quedan representadas las variables, observamos que, de nuevo, la variable Agricultura és la que mejor queda representada, seguida de 'Fábrica' y 'SSP'. Por último, la longitud de las flechas nos indica que no todas las varibales tienen la misma influencia en las componentes princpales. Así pues, "Min", "Con", "TC", "Ene", "IS" y "Fin" son variables con poca influencia Por el contrario, "Agricultura", "Fábrica" y "SSP" tienen un mayor peso en este aspecto.
+
+Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales.
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#fviz_pca_biplot(data.acp.outliers, repel = TRUE,
+ #               col.var = "blue", # color para las variables
+  #              col.ind = "#696969"  # color para las observaciones)
+```
+
+Como vemos, no hay una separación clara de los países en función de las componentes principales. Para poder analizar más en concreto este punto, consideraremos el siguiente gráfico:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#fviz_pca_biplot(data.acp.outliers, repel = TRUE,
+ #               invisible = "var", # color para las variables
+  #              col.ind = "cos2"  # color para las observaciones)
+```
+
+En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, como Polonia o Inlaterra, mientras que los países con un azul más oscuro no, como es el caso de Italia o Áustria. Observamos que, en este caso, la Unión Soviética queda mucho mejor representada por este ACP que por el que hemos hecho anteriormente.
+
+Finalmente, veamos numéricamente como és la calidad de representación de las dos CP es la siguiente:
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#res.obs=get_pca_ind(data.acp.outliers)
+#head(res.obs$coord,25)[,1:2]
+```
+
+## Clustering
+
+
+
+
+
+
+
+

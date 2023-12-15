@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Carla Martínez, Patricia Mateu y Margalida Verd">
+
+<title>Práctica clustering</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Practica clustering_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Practica clustering_files/libs/quarto-html/quarto.js"></script>
+<script src="Practica clustering_files/libs/quarto-html/popper.min.js"></script>
+<script src="Practica clustering_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Practica clustering_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Practica clustering_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Practica clustering_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Practica clustering_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Practica clustering_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Practica clustering_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Práctica clustering</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Carla Martínez, Patricia Mateu y Margalida Verd </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p><strong>Cosas que hay que hacer:</strong></p>
+<ul>
+<li>Resumen de los datos para contextualizar</li>
+<li>ACP</li>
+<li>Clustering (entiendo yo que habrá que hacerlo de un par de formas)</li>
+</ul>
+<section id="carga-de-datos-de-la-exposición" class="level2">
+<h2 class="anchored" data-anchor-id="carga-de-datos-de-la-exposición">Carga de datos de la exposición</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 1,073
+Columns: 14
+$ Country                 &lt;chr&gt; "Afghanistan", "Afghanistan", "Afghanistan", "…
+$ Year                    &lt;dbl&gt; 2017, 2018, 2019, 2020, 2021, 2017, 2018, 2019…
+$ `Total Population`      &lt;chr&gt; "-", "36,686,784", "37,769,499", "38,972,230",…
+$ `Urban Population`      &lt;chr&gt; "-", "9,353,296", "9,727,157", "10,142,913", "…
+$ `Rural Population`      &lt;chr&gt; "-", "27,333,488", "28,042,342", "28,829,317",…
+$ `Population Density`    &lt;chr&gt; "55", "56", "58", "60", "-", "105", "105", "10…
+$ `Life Expectancy`       &lt;chr&gt; "63.0", "63.0", "64.0", "63.0", "62.0", "79.0"…
+$ `Birth Rate`            &lt;dbl&gt; 37.342, 36.927, 36.466, 36.051, 35.842, 10.870…
+$ `Death Rate`            &lt;dbl&gt; 7.027, 6.981, 6.791, 7.113, 7.344, 8.150, 8.30…
+$ `Fertility Rate`        &lt;chr&gt; "5.129", "5.002", "4.87", "4.75", "4.643", "1.…
+$ `Infant Mortality Rate` &lt;chr&gt; "49.4", "47.8", "46.3", "44.8", "43.4", "8.3",…
+$ `Growth Rate`           &lt;chr&gt; "-", "3.0", "3.0", "3.0", "3.0", "-", "0.0", "…
+$ Continent               &lt;chr&gt; "Asia", "Asia", "Asia", "Asia", "Asia", "Europ…
+$ Area_km2                &lt;dbl&gt; 652230, 652230, 652230, 652230, 652230, 28748,…</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 14
+  Año    Pais Continente Area_km2 Pob_total Pob_urbana Pob_rural Densidad
+  &lt;chr&gt; &lt;int&gt;      &lt;int&gt;    &lt;int&gt;     &lt;int&gt;      &lt;int&gt;     &lt;int&gt;    &lt;int&gt;
+1 2017      0         23       23       209        209       209       11
+2 2018      0         24       24         0          2        12       13
+3 2019      0         24       24         0          2        12       13
+4 2020      0         24       24         0          2        12       13
+5 2021      0         24       24         0          2        12      216
+# ℹ 6 more variables: Esp_vida &lt;int&gt;, Natalidad &lt;int&gt;, Mortalidad &lt;int&gt;,
+#   Mortalidad_infantil &lt;int&gt;, Fertilidad &lt;int&gt;, Crecimiento &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="análisis-de-componentes-principales" class="level2">
+<h2 class="anchored" data-anchor-id="análisis-de-componentes-principales">Análisis de componentes principales</h2>
+<p>Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable <code>Año</code>, no había grandes diferencias entre los tres años resultantes: por ello, vamos a considerar solo el año <code>2019</code> para llevar a cabo nuestro ACP.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 183
+Columns: 9
+$ Area_km2            &lt;dbl&gt; 652230, 28748, 2381741, 1246700, 442, 2780400, 297…
+$ Pob_total           &lt;dbl&gt; 37769499, 2854191, 42705368, 32353588, 92117, 4493…
+$ Pob_urbana          &lt;dbl&gt; 9727157, 1747593, 31255632, 21410634, 22574, 41339…
+$ Pob_rural           &lt;dbl&gt; 28042342, 1106598, 11449736, 10942954, 69543, 3599…
+$ Densidad            &lt;int&gt; 58, 104, 18, 26, 209, 16, 99, 3, 108, 121, 40, 652…
+$ Esp_vida            &lt;int&gt; 64, 79, 76, 62, 79, 77, 75, 83, 82, 73, 71, 77, 74…
+$ Natalidad           &lt;dbl&gt; 36.466, 10.343, 23.298, 39.725, 11.485, 14.783, 12…
+$ Mortalidad          &lt;dbl&gt; 6.791, 8.480, 4.392, 7.811, 5.865, 7.600, 9.662, 6…
+$ Mortalidad_infantil &lt;dbl&gt; 46.3, 8.4, 20.1, 50.4, 5.5, 7.6, 10.5, 3.2, 2.9, 1…</code></pre>
+</div>
+</div>
+<p><strong>Comentario Marga: tenemos que determinar si hacemos princomp o prcomp, si escalamos los datos o no y si utilizamos la matriz de covarianzas o correlaciones</strong></p>
+<p>Empezamos ahora con el ACP. Vamos a utilizar la matriz de <strong>correlaciones o covarianzas</strong> y vamos a escalar los datos, debido a que no están tomados con las mismas magnitudes. El resultado que obtenemos es el siguiente:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Standard deviations (1, .., p=9):
+[1] 1.783025e+00 1.653352e+00 1.094628e+00 1.000106e+00 7.604840e-01
+[6] 3.543283e-01 3.195577e-01 2.877906e-01 1.722135e-16
+
+Rotation (n x k) = (9 x 9):
+                             PC1         PC2         PC3          PC4
+Area_km2             0.315980258  0.10054411  0.45732949  0.288851968
+Pob_total            0.510789699  0.22951803 -0.06587213 -0.054033871
+Pob_urbana           0.512936389  0.18687958  0.03058829  0.003517938
+Pob_rural            0.464297817  0.25080483 -0.15345090 -0.105005537
+Densidad             0.101158531 -0.08497832 -0.71439957 -0.387336247
+Esp_vida             0.224285644 -0.52933201 -0.02807966  0.129226322
+Natalidad           -0.234115749  0.51426487 -0.10406968  0.147723450
+Mortalidad          -0.008439318 -0.02553716  0.48973321 -0.839231305
+Mortalidad_infantil -0.212498598  0.53558484 -0.01426328 -0.098722492
+                            PC5           PC6         PC7          PC8
+Area_km2            -0.73696438  0.2302031380 -0.02999805 -0.021254818
+Pob_total            0.17763982 -0.0309778913  0.02004954  0.004526544
+Pob_urbana           0.03685671 -0.7235006922  0.02369123  0.068106922
+Pob_rural            0.29837346  0.6415964570  0.01478352 -0.057368669
+Densidad            -0.56726327 -0.0098893839  0.01317439  0.009515436
+Esp_vida             0.05855556 -0.0424408923  0.19343865 -0.780619733
+Natalidad           -0.07332561 -0.0339105442  0.77579755 -0.199199238
+Mortalidad          -0.03800599  0.0004319783  0.21273130 -0.091812739
+Mortalidad_infantil -0.05389792 -0.0888733901 -0.55965148 -0.577953631
+                              PC9
+Area_km2            -6.266808e-17
+Pob_total           -8.038772e-01
+Pob_urbana           4.135369e-01
+Pob_rural            4.275145e-01
+Densidad             8.326673e-17
+Esp_vida            -1.318390e-16
+Natalidad            0.000000e+00
+Mortalidad           1.387779e-17
+Mortalidad_infantil -1.040834e-16</code></pre>
+</div>
+</div>
+<p>Para entenderlo mejor, obtenemos los valores propios de cada componente:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>        eigenvalue variance.percent cumulative.variance.percent
+Dim.1 3.179177e+00     3.532419e+01                    35.32419
+Dim.2 2.733574e+00     3.037305e+01                    65.69724
+Dim.3 1.198211e+00     1.331346e+01                    79.01070
+Dim.4 1.000212e+00     1.111347e+01                    90.12417
+Dim.5 5.783359e-01     6.425955e+00                    96.55012
+Dim.6 1.255485e-01     1.394984e+00                    97.94511
+Dim.7 1.021171e-01     1.134634e+00                    99.07974
+Dim.8 8.282343e-02     9.202604e-01                   100.00000
+Dim.9 2.965750e-32     3.295278e-31                   100.00000</code></pre>
+</div>
+</div>
+<p>Observemos que para explicar el 80% de los datos tendríamos que escoger tres componentes principales. Con el siguiente gráfico vamos a determinar si es necesario escoger una más.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Como la pendiente entre la tercera y la cuarta componente no es pronunciada, nos quedaremos con las tres primeras componentes principales.</p>
+<p><strong>No se si el grafico siguiente nos va a dar alguna info, porque tenemos 3 componenentes y solo nos representa 2</strong></p>
+<p>En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Vamos a explicarlo detalladamente:</p>
+<ul>
+<li><p>El color de cada variable indica cuan bien representadas están;</p></li>
+<li><p>La longitud de las flechas nos indica que no todas las varibales tienen influencia en las componentes princpales.</p></li>
+</ul>
+<p><strong>¿Quitariais los outliers y comprovariais si hay cambios? Todo lo quye hay escrito abajo esta copiado de la práctica de pca, hay que cambiarlo todo</strong></p>
+<p>Vamos a realizar el mismo estudio, pero sin considerar los países que son outliers. Para ello, primero vamos a visualizar quiénes son estos países. Utilizamos la función <code>boxplot()</code>:</p>
+<p>Estos son:</p>
+<p>Una vez hemos eliminado los outliers, repetimos el proceso anterior de realizar el ACP:</p>
+<p>Veamos los valores propios de cada una de las componentes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get_eigenvalue(data.acp.outliers)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Observando la última columna, vemos que con la primera componente explicamos el 72.43% de la información, y al considerar las dos primeras componentes, llegamos a un 91.32% de explicación de los datos. De nuevo, veámoslo en el siguiente gráfico de codo:</p>
+<p>De nuevo, las pendientes de las rectas indican que con dos componentes principales és suficiente para dar una buena representación de los datos. Veámos con el siguiente gráfico cómo quedan representadas las variables en el círculo de correlación variable:</p>
+<p>Lo primero que nos llama la atención és que la variable agricultura queda aislada del resto, esto nos indica que no presenta correlación con el resto de variables; además, los colores de las flechas nos indican cuán bien quedan representadas las variables, observamos que, de nuevo, la variable Agricultura és la que mejor queda representada, seguida de ‘Fábrica’ y ‘SSP’. Por último, la longitud de las flechas nos indica que no todas las varibales tienen la misma influencia en las componentes princpales. Así pues, “Min”, “Con”, “TC”, “Ene”, “IS” y “Fin” son variables con poca influencia Por el contrario, “Agricultura”, “Fábrica” y “SSP” tienen un mayor peso en este aspecto.</p>
+<p>Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales.</p>
+<p>Como vemos, no hay una separación clara de los países en función de las componentes principales. Para poder analizar más en concreto este punto, consideraremos el siguiente gráfico:</p>
+<p>En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, como Polonia o Inlaterra, mientras que los países con un azul más oscuro no, como es el caso de Italia o Áustria. Observamos que, en este caso, la Unión Soviética queda mucho mejor representada por este ACP que por el que hemos hecho anteriormente.</p>
+<p>Finalmente, veamos numéricamente como és la calidad de representación de las dos CP es la siguiente:</p>
+</section>
+<section id="clustering" class="level2">
+<h2 class="anchored" data-anchor-id="clustering">Clustering</h2>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
