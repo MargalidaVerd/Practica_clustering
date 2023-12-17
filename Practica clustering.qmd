@@ -10,6 +10,10 @@ editor: visual
 -   Resumen de los datos para contextualizar
 -   ACP
 -   Clustering (entiendo yo que habrá que hacerlo de un par de formas)
+## Introducción
+
+El objetivo de esta práctica consiste en realizar un análisis de clustering y el análisis de componentes principales, para ello, recuperamos nuestros datos demogràficos de la pràctica 3. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable `Año`, no había grandes diferencias entre los tres años resultantes, por ello, vamos a considerar solo el año `2019` para llevar a cabo nuestro estudio. Por último, las variables de las que nos ocuparemos son: *esperanza de vida*,*natalidad*,*mortalidad*,*mortalidad infantil* y *fertilidad*.
+
 
 ## Carga de datos de la exposición
 
@@ -157,15 +161,15 @@ View(world_population)
 
 ## Análisis de componentes principales
 
-Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable `Año`, no había grandes diferencias entre los tres años resultantes: por ello, vamos a considerar solo el año `2019` para llevar a cabo nuestro ACP.
+Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Además, debemos tener en cuenta que nuestros datos no se encuentran en la mismas unidades, por lo tanto és necesario reescalarlos. 
+
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 
-datos_numericos_pais <- world_population %>% 
+datos_numericos_continente <- world_population %>% 
   filter(Año == 2019) %>% 
-  select(1, 9:13) %>% 
-  drop_na() %>% 
-  glimpse()
+  select(2, 9:13) %>% 
+  drop_na() 
 
 datos_numericos <- world_population %>% 
   filter(Año == 2019) %>% 
@@ -174,17 +178,20 @@ datos_numericos <- world_population %>%
   glimpse()
 
 rownames(datos_numericos) <- datos_numericos_pais$Pais
+```
+```{r}
+datos_escalados <- scale(datos_numericos)
 
+continentes <- data.frame(datos_numericos_continente$Continente)
+datos_escalados_continente <- cbind(datos_escalados, continentes)  ## data frame con la variable de perfil Continente
 ```
 
-**Comentario Marga: tenemos que determinar si hacemos princomp o prcomp, si escalamos los datos o no y si utilizamos la matriz de covarianzas o correlaciones**
-
-Empezamos ahora con el ACP. Vamos a utilizar la matriz de **correlaciones** y vamos a escalar los datos, debido a que no están tomados con las mismas magnitudes. El resultado que obtenemos es el siguiente:
+Empezamos ahora con el PCA, utilizamos la matriz de  **correlaciones** y la función `prcomp()` con el parámetro `cor` igualado a TRUE. Obtenemos lo siguiente: 
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 library(ggplot2)
 library("factoextra")
-data.acp=prcomp(datos_numericos, cor = TRUE, scale = TRUE)
+data.acp=prcomp(datos_escalados, cor = TRUE, scale = TRUE)
 data.acp
 ```
 
@@ -194,15 +201,14 @@ Para entenderlo mejor, obtenemos los valores propios de cada componente:
 get_eigenvalue(data.acp)
 ```
 
-Observemos que para explicar el 94% de los datos tendríamos que escoger dos componentes principales. Con el siguiente gráfico vamos a determinar si es necesario escoger una más.
+Observamos que para explicar el 94% de los datos tendríamos que escoger dos componentes principales. Cabe mencionar que añadir una componente más no nos proporciona información relevante en cuanto a la representación de las variables.
+
+Esto lo visualizamos mejor en el siguiente gráfico:
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 fviz_eig(data.acp, addlabels = TRUE, ylim=c(0,100))
 ```
-
-Como la pendiente entre la segunda y la tercera componente no es pronunciada, nos quedaremos con las dos primeras componentes principales.
-
-**No se si el grafico siguiente nos va a dar alguna info, porque tenemos 3 componenentes y solo nos representa 2**
+Vemos que la pendiente entre la primer y la segunda componentes principales és mucho más pronunciada que el resto. Así, reafirmamos nuestra decisión de considerar dos componentes principales. En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.
 
 En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.
 
@@ -212,17 +218,15 @@ fviz_pca_var(data.acp, col.var = "cos2",
              repel = TRUE) 
 ```
 
-Vamos a explicarlo detalladamente:
-- Variables correlacionadas positivamente se agrupan
-- Las correlacionadas negativamente están posicionadas en cuadrantes opuestas
-- La distancia entre variables y el origen mide la calidad de representacioón de las variables, 
-- El color de cada variable indica cuan bien representadas están
-- La longitud de las flechas nos indica que no todas las varibales tienen influencia en las componentes princpales.
 
-Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales.
+Vamos a explicarlo detalladamente: sabemos que las variables que muestran correlación positiva se agrupan, mientras que las que se muestran opuestas la una a la otra son las que presentan correlación negativa; así pues, tal y como vimos en la primera parte de este estudio, **Mortalidad infantil**, **Fertilidad** y **Natalidad** están correlacionadas positivamente, mientras que **Mortalidad infantilidad** y **Esperanza de vida** presentan correlación negativa. Además, el color de las variables nos indica cuan bien representadas están, por lo tanto,  **Natalidad** y **Mortalidad** son las que mejor representadas quedan mientras que **Mortalidad infantil** és la que peor. Por último, la longitud de las flechas indica la influencia de las variables en las componentes principales, por lo tanto, vemos que todas tienen una influencia relevante en nuestro ACP.
+
+
+Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales. (No añadiremos las estiquetas para observar mejor el gráfico)
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 fviz_pca_biplot(data.acp, repel = TRUE,
+                geom = c("point"),
                 col.var = "blue", # color para las variables
                 col.ind = "#696969"  # color para las observaciones
                 )
@@ -231,19 +235,25 @@ fviz_pca_biplot(data.acp, repel = TRUE,
 Como vemos, no hay una separación clara de los países en función de las componentes principales. Para poder analizar más en concreto este punto, consideraremos el siguiente gráfico:
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
-
-grafico <- fviz_pca_biplot(data.acp, repel = TRUE,
-                geom = "point",
+library(factoextra)
+   fviz_pca_biplot(data.acp, repel = TRUE,
+                geom = c("point"),
                 invisible = "var", # color para las variables
                 col.ind = "cos2"  # color para las observaciones,
                 ) 
-
-  #geom_text(aes(label=datos_numericos_pais$Pais),vjust=-0.2)
 ```
 
-En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, mientras que los países con un azul más oscuro no. 
+En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, mientras que los países con un azul más oscuro no. Vemos que prácticamente todos las observaciones quedan bien representadas. Los países correspondientes a las observaciones más oscuras y por ende peor representadas són: India, Republica Dominicana, Kazakhistan, Nepal, Indonesia, Bután y Tonga.
+
+```{r}
+library("ggfortify")
+autoplot(data.acp, data = datos_numericos_continente, colour = 'Continente',
+         loadings = TRUE, loadings.colour = 'blue',
+         loadings.label = TRUE, loadings.label.size = 3)
+```
 
 ## Clustering
+Recordamos que en nuestros datos teniamos múltiples valores outliers, cosa que nos impide utilizar la distancia euclídea y realizar el 
 #outliers: distancia manhattan
 #outliers: no hacemos k-means
 
@@ -258,10 +268,10 @@ diss = dist(datos_escalados, method = "manhattan")) +
   geom_vline(xintercept = 4, linetype = 2)
 ```
 
+
 ```{r}
 set.seed(259)
 pam_clusters <- pam(x = datos_escalados, k = 4, metric = "manhattan") 
-pam_clusters
 ```
 
 ```{r}
@@ -284,32 +294,32 @@ theme_bw() +
 ```{r}
 library(tidyverse)
 set.seed(101)
-hc_completo <- datos_numericos %>% 
+hc_average <- datos_numericos %>% 
   scale() %>% 
-  dist(method = "euclidean") %>% 
+  dist(method = "manhattan") %>% 
   hclust(method = "average")
-which(cutree(hc_completo, k = 4) == 4)
-fviz_dend(x = hc_completo, k = 4, cex = 0.6) + geom_hline(yintercept = 3, linetype = "dashed")
+#which(cutree(hc_completo, k = 4) == 4)
+fviz_dend(x = hc_average, k = 4, cex = 0.6) + geom_hline(yintercept = 3, linetype = "dashed")
 ```
 
 ```{r}
 library(tidyverse)
 set.seed(101)
-hc_completo <- datos_numericos %>% 
+hc_complete <- datos_numericos %>% 
   scale() %>% 
-  dist(method = "euclidean") %>% 
+  dist(method = "manhattan") %>% 
   hclust(method = "complete")
-fviz_dend(x = hc_completo, k = 4, cex = 0.6) + geom_hline(yintercept = 4., linetype = "dashed")
+fviz_dend(x = hc_complete, k = 4, cex = 0.6) + geom_hline(yintercept = 4., linetype = "dashed")
 ```
 
 ```{r}
 library(tidyverse)
 set.seed(101)
-hc_completo <- datos_numericos %>% 
+hc_ward <- datos_numericos %>% 
   scale() %>% 
-  dist(method = "euclidean") %>% 
+  dist(method = "manhattan") %>% 
   hclust(method = "ward.D2")
-fviz_dend(x = hc_completo, k = 4, cex = 0.6) + geom_hline(yintercept = 10, linetype = "dashed")
+fviz_dend(x = hc_ward, k = 4, cex = 0.6) + geom_hline(yintercept = 10, linetype = "dashed")
 ```
 Veamos a qué cluster pertenece cada país:
 ```{r}
