@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.3.353">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -101,12 +101,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p><strong>Cosas que hay que hacer:</strong></p>
-<ul>
-<li>Resumen de los datos para contextualizar</li>
-<li>ACP</li>
-<li>Clustering (entiendo yo que habrá que hacerlo de un par de formas)</li>
-</ul>
+<section id="introducción" class="level2">
+<h2 class="anchored" data-anchor-id="introducción">Introducción</h2>
+<p>El objetivo de esta práctica consiste en realizar un análisis de clustering y el análisis de componentes principales, para ello, recuperamos nuestros datos demogràficos de la pràctica 3. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable <code>Año</code>, no había grandes diferencias entre los tres años resultantes, por ello, vamos a considerar solo el año <code>2019</code> para llevar a cabo nuestro estudio. Por último, las variables de las que nos ocuparemos son: <em>esperanza de vida</em>,<em>natalidad</em>,<em>mortalidad</em>,<em>mortalidad infantil</em> y <em>fertilidad</em>.</p>
+</section>
 <section id="carga-de-datos-de-la-exposición" class="level2">
 <h2 class="anchored" data-anchor-id="carga-de-datos-de-la-exposición">Carga de datos de la exposición</h2>
 <div class="cell">
@@ -129,132 +127,158 @@ $ Continent               &lt;chr&gt; "Asia", "Asia", "Asia", "Asia", "Asia", "E
 $ Area_km2                &lt;dbl&gt; 652230, 652230, 652230, 652230, 652230, 28748,…</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 14
-  Año    Pais Continente Area_km2 Pob_total Pob_urbana Pob_rural Densidad
-  &lt;chr&gt; &lt;int&gt;      &lt;int&gt;    &lt;int&gt;     &lt;int&gt;      &lt;int&gt;     &lt;int&gt;    &lt;int&gt;
-1 2017      0         23       23       209        209       209       11
-2 2018      0         24       24         0          2        12       13
-3 2019      0         24       24         0          2        12       13
-4 2020      0         24       24         0          2        12       13
-5 2021      0         24       24         0          2        12      216
-# ℹ 6 more variables: Esp_vida &lt;int&gt;, Natalidad &lt;int&gt;, Mortalidad &lt;int&gt;,
-#   Mortalidad_infantil &lt;int&gt;, Fertilidad &lt;int&gt;, Crecimiento &lt;int&gt;</code></pre>
-</div>
-</div>
 </section>
 <section id="análisis-de-componentes-principales" class="level2">
 <h2 class="anchored" data-anchor-id="análisis-de-componentes-principales">Análisis de componentes principales</h2>
-<p>Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable <code>Año</code>, no había grandes diferencias entre los tres años resultantes: por ello, vamos a considerar solo el año <code>2019</code> para llevar a cabo nuestro ACP.</p>
+<p>Realicemos un análisis de componentes principales; empezaremos seleccionando los datos numéricos de nuestra tabla de datos. Además, debemos tener en cuenta que nuestros datos no se encuentran en la mismas unidades, por lo tanto és necesario reescalarlos.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 183
-Columns: 9
-$ Area_km2            &lt;dbl&gt; 652230, 28748, 2381741, 1246700, 442, 2780400, 297…
-$ Pob_total           &lt;dbl&gt; 37769499, 2854191, 42705368, 32353588, 92117, 4493…
-$ Pob_urbana          &lt;dbl&gt; 9727157, 1747593, 31255632, 21410634, 22574, 41339…
-$ Pob_rural           &lt;dbl&gt; 28042342, 1106598, 11449736, 10942954, 69543, 3599…
-$ Densidad            &lt;int&gt; 58, 104, 18, 26, 209, 16, 99, 3, 108, 121, 40, 652…
-$ Esp_vida            &lt;int&gt; 64, 79, 76, 62, 79, 77, 75, 83, 82, 73, 71, 77, 74…
+<pre><code>Rows: 191
+Columns: 5
+$ Esp_vida            &lt;int&gt; 64, 79, 76, 62, 79, 77, 75, 83, 82, 73, 71, 80, 73…
 $ Natalidad           &lt;dbl&gt; 36.466, 10.343, 23.298, 39.725, 11.485, 14.783, 12…
 $ Mortalidad          &lt;dbl&gt; 6.791, 8.480, 4.392, 7.811, 5.865, 7.600, 9.662, 6…
-$ Mortalidad_infantil &lt;dbl&gt; 46.3, 8.4, 20.1, 50.4, 5.5, 7.6, 10.5, 3.2, 2.9, 1…</code></pre>
+$ Mortalidad_infantil &lt;dbl&gt; 46.3, 8.4, 20.1, 50.4, 5.5, 7.6, 10.5, 3.2, 2.9, 1…
+$ Fertilidad          &lt;dbl&gt; 4.870, 1.414, 2.988, 5.442, 1.468, 1.994, 1.575, 1…</code></pre>
 </div>
 </div>
-<p><strong>Comentario Marga: tenemos que determinar si hacemos princomp o prcomp, si escalamos los datos o no y si utilizamos la matriz de covarianzas o correlaciones</strong></p>
-<p>Empezamos ahora con el ACP. Vamos a utilizar la matriz de <strong>correlaciones o covarianzas</strong> y vamos a escalar los datos, debido a que no están tomados con las mismas magnitudes. El resultado que obtenemos es el siguiente:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>datos_escalados <span class="ot">&lt;-</span> <span class="fu">scale</span>(datos_numericos)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>continentes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(datos_numericos_continente<span class="sc">$</span>Continente)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>datos_escalados_continente <span class="ot">&lt;-</span> <span class="fu">cbind</span>(datos_escalados, continentes)  <span class="do">## data frame con la variable de perfil Continente</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Empezamos ahora con el PCA, utilizamos la matriz de <strong>correlaciones</strong> y la función <code>prcomp()</code> con el parámetro <code>cor</code> igualado a TRUE. Obtenemos lo siguiente:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Standard deviations (1, .., p=9):
-[1] 1.783025e+00 1.653352e+00 1.094628e+00 1.000106e+00 7.604840e-01
-[6] 3.543283e-01 3.195577e-01 2.877906e-01 1.722135e-16
+<pre><code>Standard deviations (1, .., p=5):
+[1] 1.91213663 1.02778341 0.43372916 0.29885291 0.09980344
 
-Rotation (n x k) = (9 x 9):
-                             PC1         PC2         PC3          PC4
-Area_km2             0.315980258  0.10054411  0.45732949  0.288851968
-Pob_total            0.510789699  0.22951803 -0.06587213 -0.054033871
-Pob_urbana           0.512936389  0.18687958  0.03058829  0.003517938
-Pob_rural            0.464297817  0.25080483 -0.15345090 -0.105005537
-Densidad             0.101158531 -0.08497832 -0.71439957 -0.387336247
-Esp_vida             0.224285644 -0.52933201 -0.02807966  0.129226322
-Natalidad           -0.234115749  0.51426487 -0.10406968  0.147723450
-Mortalidad          -0.008439318 -0.02553716  0.48973321 -0.839231305
-Mortalidad_infantil -0.212498598  0.53558484 -0.01426328 -0.098722492
-                            PC5           PC6         PC7          PC8
-Area_km2            -0.73696438  0.2302031380 -0.02999805 -0.021254818
-Pob_total            0.17763982 -0.0309778913  0.02004954  0.004526544
-Pob_urbana           0.03685671 -0.7235006922  0.02369123  0.068106922
-Pob_rural            0.29837346  0.6415964570  0.01478352 -0.057368669
-Densidad            -0.56726327 -0.0098893839  0.01317439  0.009515436
-Esp_vida             0.05855556 -0.0424408923  0.19343865 -0.780619733
-Natalidad           -0.07332561 -0.0339105442  0.77579755 -0.199199238
-Mortalidad          -0.03800599  0.0004319783  0.21273130 -0.091812739
-Mortalidad_infantil -0.05389792 -0.0888733901 -0.55965148 -0.577953631
-                              PC9
-Area_km2            -6.266808e-17
-Pob_total           -8.038772e-01
-Pob_urbana           4.135369e-01
-Pob_rural            4.275145e-01
-Densidad             8.326673e-17
-Esp_vida            -1.318390e-16
-Natalidad            0.000000e+00
-Mortalidad           1.387779e-17
-Mortalidad_infantil -1.040834e-16</code></pre>
+Rotation (n x k) = (5 x 5):
+                             PC1         PC2        PC3         PC4         PC5
+Esp_vida             0.493177101 -0.15570963 -0.4766372  0.68584968  0.18697065
+Natalidad           -0.508315731 -0.15307739 -0.3529211 -0.12189679  0.76076952
+Mortalidad           0.006949629  0.96796931 -0.2294373  0.02871237  0.09757683
+Mortalidad_infantil -0.496222609  0.09550935  0.4888622  0.71053104  0.02829219
+Fertilidad          -0.502101871 -0.07896336 -0.5971900  0.09525037 -0.61314763</code></pre>
 </div>
 </div>
 <p>Para entenderlo mejor, obtenemos los valores propios de cada componente:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>        eigenvalue variance.percent cumulative.variance.percent
-Dim.1 3.179177e+00     3.532419e+01                    35.32419
-Dim.2 2.733574e+00     3.037305e+01                    65.69724
-Dim.3 1.198211e+00     1.331346e+01                    79.01070
-Dim.4 1.000212e+00     1.111347e+01                    90.12417
-Dim.5 5.783359e-01     6.425955e+00                    96.55012
-Dim.6 1.255485e-01     1.394984e+00                    97.94511
-Dim.7 1.021171e-01     1.134634e+00                    99.07974
-Dim.8 8.282343e-02     9.202604e-01                   100.00000
-Dim.9 2.965750e-32     3.295278e-31                   100.00000</code></pre>
+<pre><code>       eigenvalue variance.percent cumulative.variance.percent
+Dim.1 3.656266497       73.1253299                    73.12533
+Dim.2 1.056338735       21.1267747                    94.25210
+Dim.3 0.188120982        3.7624196                    98.01452
+Dim.4 0.089313060        1.7862612                    99.80079
+Dim.5 0.009960726        0.1992145                   100.00000</code></pre>
 </div>
 </div>
-<p>Observemos que para explicar el 80% de los datos tendríamos que escoger tres componentes principales. Con el siguiente gráfico vamos a determinar si es necesario escoger una más.</p>
+<p>Observamos que para explicar el 94% de los datos tendríamos que escoger dos componentes principales. Cabe mencionar que añadir una componente más no nos proporciona información relevante en cuanto a la representación de las variables.</p>
+<p>Esto lo visualizamos mejor en el siguiente gráfico:</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="Practica-clustering_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Como la pendiente entre la tercera y la cuarta componente no es pronunciada, nos quedaremos con las tres primeras componentes principales.</p>
-<p><strong>No se si el grafico siguiente nos va a dar alguna info, porque tenemos 3 componenentes y solo nos representa 2</strong></p>
+<p>Vemos que la pendiente entre la primer y la segunda componentes principales és mucho más pronunciada que el resto. Así, reafirmamos nuestra decisión de considerar dos componentes principales. En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.</p>
 <p>En el siguiente gráfico vemos como quedarían representadas cada una de las variables en el círculo de correlación variable.</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="Practica-clustering_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Vamos a explicarlo detalladamente:</p>
-<ul>
-<li><p>El color de cada variable indica cuan bien representadas están;</p></li>
-<li><p>La longitud de las flechas nos indica que no todas las varibales tienen influencia en las componentes princpales.</p></li>
-</ul>
-<p><strong>¿Quitariais los outliers y comprovariais si hay cambios? Todo lo quye hay escrito abajo esta copiado de la práctica de pca, hay que cambiarlo todo</strong></p>
-<p>Vamos a realizar el mismo estudio, pero sin considerar los países que son outliers. Para ello, primero vamos a visualizar quiénes son estos países. Utilizamos la función <code>boxplot()</code>:</p>
-<p>Estos son:</p>
-<p>Una vez hemos eliminado los outliers, repetimos el proceso anterior de realizar el ACP:</p>
-<p>Veamos los valores propios de cada una de las componentes:</p>
+<p>Vamos a explicarlo detalladamente: sabemos que las variables que muestran correlación positiva se agrupan, mientras que las que se muestran opuestas la una a la otra son las que presentan correlación negativa; así pues, tal y como vimos en la primera parte de este estudio, <strong>Mortalidad infantil</strong>, <strong>Fertilidad</strong> y <strong>Natalidad</strong> están correlacionadas positivamente, mientras que <strong>Mortalidad infantilidad</strong> y <strong>Esperanza de vida</strong> presentan correlación negativa. Además, el color de las variables nos indica cuan bien representadas están, por lo tanto, <strong>Natalidad</strong> y <strong>Mortalidad</strong> son las que mejor representadas quedan mientras que <strong>Mortalidad infantil</strong> és la que peor. Por último, la longitud de las flechas indica la influencia de las variables en las componentes principales, por lo tanto, vemos que todas tienen una influencia relevante en nuestro ACP.</p>
+<p>Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales. (No añadiremos las estiquetas para observar mejor el gráfico)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get_eigenvalue(data.acp.outliers)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
-<p>Observando la última columna, vemos que con la primera componente explicamos el 72.43% de la información, y al considerar las dos primeras componentes, llegamos a un 91.32% de explicación de los datos. De nuevo, veámoslo en el siguiente gráfico de codo:</p>
-<p>De nuevo, las pendientes de las rectas indican que con dos componentes principales és suficiente para dar una buena representación de los datos. Veámos con el siguiente gráfico cómo quedan representadas las variables en el círculo de correlación variable:</p>
-<p>Lo primero que nos llama la atención és que la variable agricultura queda aislada del resto, esto nos indica que no presenta correlación con el resto de variables; además, los colores de las flechas nos indican cuán bien quedan representadas las variables, observamos que, de nuevo, la variable Agricultura és la que mejor queda representada, seguida de ‘Fábrica’ y ‘SSP’. Por último, la longitud de las flechas nos indica que no todas las varibales tienen la misma influencia en las componentes princpales. Así pues, “Min”, “Con”, “TC”, “Ene”, “IS” y “Fin” son variables con poca influencia Por el contrario, “Agricultura”, “Fábrica” y “SSP” tienen un mayor peso en este aspecto.</p>
-<p>Ahora, veamos si podemos obtener una clasificación de los países por grupos a través de las dos componentes principales.</p>
+</div>
 <p>Como vemos, no hay una separación clara de los países en función de las componentes principales. Para poder analizar más en concreto este punto, consideraremos el siguiente gráfico:</p>
-<p>En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, como Polonia o Inlaterra, mientras que los países con un azul más oscuro no, como es el caso de Italia o Áustria. Observamos que, en este caso, la Unión Soviética queda mucho mejor representada por este ACP que por el que hemos hecho anteriormente.</p>
-<p>Finalmente, veamos numéricamente como és la calidad de representación de las dos CP es la siguiente:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>En él, podemos ver los países coloreados en relación a la calidad de representación en el ACP. Los países representados por azul claro tienen una alta representación, mientras que los países con un azul más oscuro no. Vemos que prácticamente todos las observaciones quedan bien representadas. Los países correspondientes a las observaciones más oscuras y por ende peor representadas són: India, Republica Dominicana, Kazakhistan, Nepal, Indonesia, Bután y Tonga.</p>
+<p>Una vez realizado el ACP, vamos a visulizar como quedan agrupados los países según su continente:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Lo primero que observamos es que los países de Europa queda agrupados a la derecha del gráfico, es decir, que la variable con más influencia sobre ellos es <strong>Esperanza de vida</strong>; por el contrario los países africanos se situan a la izquierda del gráfico siendo más representados por las variables <strong>Natalidad</strong>, <strong>Mortalidad</strong> y <strong>Mortalidad infantil</strong>. En cuanto al resto de continentes, no vemos un patrón claro.</p>
 </section>
 <section id="clustering" class="level2">
 <h2 class="anchored" data-anchor-id="clustering">Clustering</h2>
+<p>Recordamos que en nuestros datos teniamos múltiples valores outliers, cosa que nos impide utilizar la distancia euclídea y aplicar el algoritmo k-means. Por ello, utilizaremos la distancia manhattan entre las observaciones y aplicaremos el algoritmo k-medoids.</p>
+<p>Primero debemos determinar el número óptimo de clusters que utilizaremos. Veámoslo con el método del codo:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Viendo el gráfico, decidimos utilizar tres clusters.</p>
+<section id="k-medoids" class="level3">
+<h3 class="anchored" data-anchor-id="k-medoids">K-medoids:</h3>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Observamos que se repite el patrón que hemos visto en el gráfico autoplot, en este caso, vemos que el cluster verde se adapta bien a los países de Europa, mientras que el cluster rojo engloba los países de África y algunos de Oceanía; por último, el cluster azul toma los países de Ásia, Sudamérica y Norteamérica.</p>
+</section>
+<section id="clustering-aglomerativo" class="level3">
+<h3 class="anchored" data-anchor-id="clustering-aglomerativo">Clustering aglomerativo:</h3>
+<p>Vamos a ver ahora tres clusters jerárquicos utilizando distintas distancias para determinar cuál de ellas se adapta mejor a nuestros datos. Empezamos utilizando el <em>linkage complete</em>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Veamos ahora que países encontramos en cada cluster:</p>
+<p>Veamos que países encontramos en cada cluster: en el primer cluster (lila) nos encontramos con países de África, Ásia y Oceanía mayoritariamente; el cluster 2 (azul) contiene todos los países de Europa, algunos de Ásia, y gran parte de los países de Norteamérica y Sudamérica; el tercer cluster (verde) contiene mayoritariamente países de Ásia, Sudamérica y Oceanía; finalmente, en el cluster 4 (rojo) encontramos únicamente países de África.</p>
+<p>Veamos que ocurre al utilizar el <em>linkage average</em>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>En este caso, se han agrupado en tres clústers; el primero, que es el que tiene menos observaciones corresponde única y exclusivamente a algunos paises de África. Los países de Europa, Asia, Norteamérica y Sudamérica se han agrupado en un clúster y, finalmente, Oceanía y África en otro clúster por separado.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ga <span class="ot">&lt;-</span> <span class="fu">cutree</span>(hc_average, <span class="at">k=</span><span class="dv">3</span>) </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>datos_average <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="st">"Pais"</span> <span class="ot">=</span>datos_numericos_continente<span class="sc">$</span>Pais, <span class="st">"Continente"</span> <span class="ot">=</span> datos_numericos_continente<span class="sc">$</span>Continente, <span class="st">"Cluster"</span> <span class="ot">=</span>ga)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#datos_average %&gt;% </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  arrange(Continente)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Por último, estudiaremos el <em>linkage ward</em>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Practica-clustering_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>En este caso, hemos decidido considerar 5 clusters, veamos que países cncontramos en cada uno de ellos:</p>
+<p>En el primer cluster (verde) encontramos mayoritariamente países de África, y el resto son de Oceanía y Ásia; en el segundo (lila) encontramos mayoritariamente países de África, Norteamérica y Sudamérica y alguno de Europa; en el cluster 3 (rojo) vemos que la mayoría son países de Ásia y Norteamérica; en el cluster 4 (azul) tan solo encontramos países de África; por último, en el quinto cluster (amarillo) vemos que se encuentran prácticamente todos los países de Europa.</p>
+</section>
+<section id="conclusión" class="level3">
+<h3 class="anchored" data-anchor-id="conclusión">Conclusión:</h3>
+<p>Gracias al ACP realizado hemos visto que los continentes que mejor representados estaban eran Eruopa y África, ambos en lados extremos del gráfico debido a que las variables que actúan con mayor peso sobre los países de estos són justo las que están correlacionadas negativamente, como vimos en la práctica anterior.</p>
+<p>A continuación hemos llevado a cabo el clustering para ver si había una agrupación por continentes respecto a las variables dadas. La conclusión no está del todo clara. Por un lado, con el método particional k-medoids hemos visto que los datos se podían agrupar en 3 clústers, correspondientes a los realizados por el ACP. Por otro lado, hemos realizado un clustering jerárquico, utilizando tres linkage diferentes para comprobar cual era el mejor. Hemos obtenido diferentes resultados. Para determinar con cuál nos quedamos, utilizaremos la función cophenetics(). Así, obtenemos los siguientes resultados:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.7678405</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.7483935</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.5994604</code></pre>
+</div>
+</div>
+<p>El primer valor corresponde al método complete y vemos que es el que ha obtenido una mayor correlación; por lo tanto, nos quedaremos con los resultados de este. Es decir, los países se agrupan en cuatro clústers.</p>
+</section>
 </section>
 
 </main>

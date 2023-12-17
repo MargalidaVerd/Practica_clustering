@@ -5,11 +5,6 @@ format: html
 editor: visual
 ---
 
-**Cosas que hay que hacer:**
-
--   Resumen de los datos para contextualizar
--   ACP
--   Clustering (entiendo yo que habrá que hacerlo de un par de formas)
 ## Introducción
 
 El objetivo de esta práctica consiste en realizar un análisis de clustering y el análisis de componentes principales, para ello, recuperamos nuestros datos demogràficos de la pràctica 3. Recordemos que en el análisis exploratorio, si agrupábamos los datos por la variable `Año`, no había grandes diferencias entre los tres años resultantes, por ello, vamos a considerar solo el año `2019` para llevar a cabo nuestro estudio. Por último, las variables de las que nos ocuparemos son: *esperanza de vida*,*natalidad*,*mortalidad*,*mortalidad infantil* y *fertilidad*.
@@ -70,12 +65,6 @@ world_population <- world_population %>%
   mutate(Mortalidad_infantil = as.numeric(Mortalidad_infantil)) %>% 
   mutate(Crecimiento = as.character(Crecimiento))
   
-```
-
-```{r, warning=FALSE, message=FALSE,echo=FALSE}
-world_population %>% 
-  group_by(Año) %>% 
-  summarise_all(funs(sum(is.na(.))))
 ```
 
 ```{r,warning=FALSE,message=FALSE,echo=FALSE}
@@ -156,7 +145,7 @@ world_population$Area_km2[634:636] = 346
 world_population$Continente[637:639] = "Asia"
 world_population$Area_km2[637:639] = 5860
 
-View(world_population)
+
 ```
 
 ## Análisis de componentes principales
@@ -177,7 +166,6 @@ datos_numericos <- world_population %>%
   drop_na() %>%
   glimpse()
 
-rownames(datos_numericos) <- datos_numericos_pais$Pais
 ```
 ```{r}
 datos_escalados <- scale(datos_numericos)
@@ -269,7 +257,7 @@ diss = dist(datos_escalados, method = "manhattan")) +
 ```
 Viendo el gráfico, decidimos utilizar tres clusters. 
 
-### k-medoids
+### K-medoids:
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 set.seed(259)
@@ -290,7 +278,7 @@ theme_bw() +
 Observamos que se repite el patrón que hemos visto en el gráfico autoplot, en este caso, vemos que el cluster verde se adapta bien a los países de Europa, mientras que el cluster rojo engloba los países de África y algunos de Oceanía; por último, el cluster azul toma los países de Ásia, Sudamérica y Norteamérica.
 
 
-### Clustering aglomerativo
+### Clustering aglomerativo:
 Vamos a ver ahora tres clusters jerárquicos utilizando distintas distancias para determinar cuál de ellas se adapta mejor a nuestros datos. Empezamos utilizando el *linkage complete*: 
 
 
@@ -304,15 +292,15 @@ hc_complete <- datos_numericos %>%
 fviz_dend(x = hc_complete, h = 10, cex = 0.6) + geom_hline(yintercept = 9, linetype = "dashed")
 ```
 Veamos ahora que países encontramos en cada cluster:
-```{r}
-gc <- cutree(hc_completo, k = 4) 
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+gc <- cutree(hc_complete, k = 4) 
 
 datos_complete = data.frame("Pais" = datos_numericos_continente$Pais, "Continente" = datos_numericos_continente$Continente, "Cluster" =gc)
 
-datos_complete %>% 
-  arrange(Continente)
+#datos_complete %>% 
+#  arrange(Continente)
 ```
-Veamos que países encontramos en cada cluster: en el primer cluster nos encontramos con países de África, Ásia y Oceanía mayoritariamente; el cluster 2 contiene todos los países de Europa, algunos de Ásia, como Qatar o Singapur, y gran parte de los países de Norteamérica y Sudamérica; el tercer cluster contiene mayoritariamente países de Ásia, Sudamérica y Oceanía; finalmente, en el cluster 4 encontramos únicamente  países de África.
+Veamos que países encontramos en cada cluster: en el primer cluster (lila) nos encontramos con países de África, Ásia y Oceanía mayoritariamente; el cluster 2 (azul) contiene todos los países de Europa, algunos de Ásia, y gran parte de los países de Norteamérica y Sudamérica; el tercer cluster  (verde) contiene mayoritariamente países de Ásia, Sudamérica y Oceanía; finalmente, en el cluster 4 (rojo) encontramos únicamente  países de África.
 
 
 Veamos que ocurre al utilizar el *linkage average*: 
@@ -326,6 +314,18 @@ hc_average <- datos_numericos %>%
 fviz_dend(x = hc_average, h = 7, cex = 0.6) + geom_hline(yintercept = 6, linetype = "dashed")
 ```
 
+
+
+En este caso, se han agrupado en tres clústers; el primero, que es el que tiene menos observaciones corresponde única y exclusivamente a algunos paises de África. Los países de Europa, Asia, Norteamérica y Sudamérica se han agrupado en un clúster y, finalmente, Oceanía y África en otro clúster por separado.
+```{r}
+ga <- cutree(hc_average, k=3) 
+datos_average = data.frame("Pais" =datos_numericos_continente$Pais, "Continente" = datos_numericos_continente$Continente, "Cluster" =ga)
+
+#datos_average %>% 
+#  arrange(Continente)
+```
+
+
 Por último, estudiaremos el *linkage ward*:
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -336,41 +336,40 @@ hc_ward <- datos_numericos %>%
   hclust(method = "ward.D2")
 fviz_dend(x = hc_ward, h = 20, cex = 0.6) + geom_hline(yintercept = 15, linetype = "dashed")
 ```
-```{r}
+En este caso, hemos decidido considerar 5 clusters, veamos que países cncontramos en cada uno de ellos:
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
 gw <- cutree(hc_ward,k = 5) 
-
 datos_ward = data.frame("Pais" =datos_numericos_continente$Pais, "Continente" = datos_numericos_continente$Continente, "Cluster" =gw)
-datos_ward
 
-
-datos_ward %>% 
-  arrange(Continente)
+#datos_ward %>% 
+#  arrange(Continente)
 
 ```
+En el primer cluster (verde) encontramos mayoritariamente países de África, y el resto son de Oceanía y Ásia; en el segundo (lila) encontramos mayoritariamente países de África, Norteamérica y Sudamérica y alguno de Europa; en el cluster 3 (rojo) vemos que la mayoría son países de Ásia y Norteamérica; en el cluster 4 (azul) tan solo encontramos países de África; por último, en el quinto cluster (amarillo) vemos que se encuentran prácticamente todos los países de Europa. 
 
 
-Para comparar los resultados de los árboles resultantes, usamos la función cophenetic:
-```{r}
-mat_dist <- get_dist(datos_numericos, method = "manhattan")
-cor(x = mat_dist, cophenetic(hc_completo))
-cor(x = mat_dist, cophenetic(hc_average))
-cor(x = mat_dist, cophenetic(hc_ward))
-```
+### Conclusión:
 
-Podemos ver que el dendograma que mejor representa la similitud real entre los individuos es el hecho mediante el método de linkage ward, por lo que nos quedaremos con este.
+Gracias al ACP realizado hemos visto que los continentes que mejor representados estaban eran Eruopa y África, ambos en lados extremos del gráfico debido a que las variables que actúan con mayor peso sobre los países de estos són justo las que están correlacionadas negativamente, como vimos en la práctica anterior.
 
-
-
+A continuación hemos llevado a cabo el clustering para ver si había una agrupación por continentes respecto a las variables dadas. La conclusión no está del todo clara. Por un lado, con el método particional k-medoids hemos visto que los datos se podían agrupar en 3 clústers, correspondientes a los realizados por el ACP. Por otro lado, hemos realizado un clustering jerárquico, utilizando tres linkage diferentes para comprobar cual era el mejor. Hemos obtenido diferentes resultados. Para determinar con cuál nos quedamos, utilizaremos la función cophenetics(). Así, obtenemos los siguientes resultados:
 
 
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
-fviz_cluster(object = list(data = datos_escalados, cluster = cutree(hc_completo, k = 3)), geom = "point", ellipse.type = "convex",repel = TRUE,
-show.clust.cent = TRUE) +
-  
-theme_bw()
-
+mat_dist <- get_dist(datos_numericos, method = "manhattan")
+cor(x = mat_dist, cophenetic(hc_complete))
+cor(x = mat_dist, cophenetic(hc_average))
+cor(x = mat_dist, cophenetic(hc_ward))
 ```
+
+El primer valor corresponde al método complete y vemos que es el que ha obtenido una mayor correlación; por lo tanto, nos quedaremos con los resultados de este. Es decir, los países se agrupan en cuatro clústers.
+
+
+
+
+
+
 
 
 
